@@ -197,10 +197,8 @@ for i in range(1):
     print("Message chiffré:", ciphertext)
 
     # Déchiffrer
-    decrypted_text = list()
-    for j in range(len(ciphertext)):
-        decrypted_text.append(decrypt(key, ciphertext[j]))  # Utiliser le premier élément de la liste
-    print("Message déchiffré:", )
+    plaintext_result = decrypt_list(key, ciphertext)
+    print("Message déchiffré:", plaintext_result)
 
     # Attaque par force brute
     print("Attaque par force brute pour 1 cryptage...")
