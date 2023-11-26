@@ -95,12 +95,51 @@ def encrypt(key, plaintext):
     """Encrypt plaintext with given key"""
     data = fk(keyGen(key)[0], ip(plaintext))
     return fp(fk(keyGen(key)[1], swapNibbles(data)))
+
+def encrypt_list(key, plaintext):
+    """Encrypt plaintext with given key
+
+    Args:
+        key (binary): Un nombre binair de 10 bits
+        plaintext (str): Le message à chiffrer
+
+    Returns:
+        list: la liste des caractères chiffrés
+    """
+    data = []
+    plaintext_int_list = [ord(char) for char in plaintext_str]
+    for i in range(len(plaintext)):
+        data.append(encrypt(key, plaintext_int_list[i]))
+    return data
  
 def decrypt(key, ciphertext):
     """Decrypt ciphertext with given key"""
     data = fk(keyGen(key)[1], ip(ciphertext))
-    return fp(fk(keyGen(key)[0], swapNibbles(data)))  
- 
+    return fp(fk(keyGen(key)[0], swapNibbles(data)))
+
+def decrypt_list(key, ciphertext):
+    """Decrypt ciphertext with given key
+
+    Args:
+        key (binary): Un nombre binair de 10 bits
+        ciphertext (list): La liste des caractères chiffrés
+
+    Returns:
+        str: Le message déchiffré
+    """
+    data = []
+    for i in range(len(ciphertext)):
+        data.append(decrypt(key, ciphertext[i]))
+    return ''.join(chr(char) for char in data)
+
+def text_to_binary_list(input_string):
+    """Convert a string to a list of binary numbers"""
+    return [ord(char) for char in input_string]
+
+def binary_list_to_text(binary_list):
+    """Convert a list of binary numbers to a string"""
+    return ''.join(chr(char) for char in binary_list)
+
 # if __name__ == '__main__':
     # Test vectors described in "Simplified DES (SDES)"
     # (http://www2.kinneret.ac.il/mjmay/ise328/328-Assignment1-SDES.pdf)
@@ -130,38 +169,43 @@ def decrypt(key, ciphertext):
         print("Output: ", encrypt(0b1111111111, 0b10101010), "Expected: ", 0b00000100)
         exit(1)
  
-def brute_force_decrypt(message_chiffre, message_clair=0b10101010):
-    """Perform a brute-force attack to decrypt the ciphertext"""
-    for key in range(2048):
-        plaintext = decrypt(key, message_chiffre)
-        if plaintext == message_clair:
-            return key
+def cassage_brutal_simple(message_clair, message_chiffre):
+    for i in range(2**10):
+        trouvee = all(decrypt(i, mc) == mcl for mc, mcl in zip(message_chiffre, message_clair))
+
+        if trouvee == True:
+            return i
     return None
 
-def brute_force_decrupt_via_encrypt(data, message_clair):
-    """Perform a brute-force attack to decrypt the ciphertext"""
-    for key in range(1024):
-        ciphertext = encrypt(key, data)
-        if ciphertext == message_clair:
-            return key
-    return None
+def cassage_inteligent(message_chiffre, message_clair, taille_cle1, taille_cle2):
+    for i in range(2**taille_cle1):
+        for j in range(2**taille_cle2):
+            if decrypt(j,message_chiffre) == encrypt(i,message_clair):
+                return i,j
 
+
+            
+
+# Cryptage avec 2 clés
 for i in range(1):
-    # Generate random 8-bit plaintext and 10-bit key
-    plaintext = random.randint(0, 2**8)
-    key = random.randint(0, 2**10)
+    # Convertir la chaîne en une liste d'entiers
+    plaintext_str = "Hello, world!"
+    key = 0b1010101010
 
-    data = encrypt(key,plaintext)
+    # Chiffrer
+    ciphertext = encrypt_list(key, plaintext_str)
+    print("Message chiffré:", ciphertext)
 
-    # Decrypt 
-    t1 = time()
-    key_trouvée_decrypt = brute_force_decrypt(data)
-    t2 = time()
+    # Déchiffrer
+    decrypted_text = list()
+    for j in range(len(ciphertext)):
+        decrypted_text.append(decrypt(key, ciphertext[j]))  # Utiliser le premier élément de la liste
+    print("Message déchiffré:", )
 
-    t3 = time()
-    key_trouvée_encrype = brute_force_decrupt_via_encrypt(data,plaintext)
-    t4 = time()
-    print("time decrypt avec decrypt " + str(t2-t1))
-    print("time encrypt avec encrypt " + str(t4-t3))
+    # Attaque par force brute
+    print("Attaque par force brute pour 1 cryptage...")
+    print(cassage_brutal_simple(text_to_binary_list(plaintext_str), ciphertext))
+    print("Attaque par force brute pour 2 cryptages...")
+
 
 exit()
