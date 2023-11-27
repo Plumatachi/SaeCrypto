@@ -111,6 +111,22 @@ def encrypt_list(key, plaintext):
     for i in range(len(plaintext)):
         data.append(encrypt(key, plaintext_int_list[i]))
     return data
+
+def encrypt_list_double(key, key2, plaintext):
+    """Encrypt plaintext with given key
+
+    Args:
+        key (binary): Un nombre binair de 10 bits
+        plaintext (str): Le message à chiffrer
+
+    Returns:
+        list: la liste des caractères chiffrés
+    """
+    data = []
+    plaintext_int_list = [ord(char) for char in plaintext_str]
+    for i in range(len(plaintext)):
+        data.append(encrypt(key2, encrypt(key, plaintext_int_list[i])))
+    return data
  
 def decrypt(key, ciphertext):
     """Decrypt ciphertext with given key"""
@@ -130,7 +146,22 @@ def decrypt_list(key, ciphertext):
     data = []
     for i in range(len(ciphertext)):
         data.append(decrypt(key, ciphertext[i]))
-    return ''.join(chr(char) for char in data)
+    return data
+
+def decrypt_list_double(key, key2, ciphertext):
+    """Decrypt ciphertext with given key
+
+    Args:
+        key (binary): Un nombre binair de 10 bits
+        ciphertext (list): La liste des caractères chiffrés
+
+    Returns:
+        str: Le message déchiffré
+    """
+    data = []
+    for i in range(len(ciphertext)):
+        data.append(decrypt(key, decrypt(key2, ciphertext[i])))
+    return data
 
 def text_to_binary_list(input_string):
     """Convert a string to a list of binary numbers"""
@@ -177,11 +208,25 @@ def cassage_brutal_simple(message_clair, message_chiffre):
             return i
     return None
 
-def cassage_inteligent(message_chiffre, message_clair, taille_cle1, taille_cle2):
-    for i in range(2**taille_cle1):
-        for j in range(2**taille_cle2):
-            if decrypt(j,message_chiffre) == encrypt(i,message_clair):
-                return i,j
+def cassage_brutal(message_clair, message_chiffre):
+    for i in range(2**10):
+        for j in range(2**10):
+            trouvee = all(decrypt(j, decrypt(i, mc)) == mcl for mc, mcl in zip(message_chiffre, message_clair))
+            if trouvee:
+                return i, j
+                
+    return None
+
+
+def cassage_inteligent(message_chiffre, message_clair):
+    for i in range(2**10):
+        for j in range(2**10):
+            sub_chiffre = message_chiffre[:3]
+            sub_clair = message_clair[:3]
+            trouvee = all(decrypt(j, mc) == encrypt(i,mcl) for mc, mcl in zip(sub_chiffre, sub_clair))
+            if trouvee:
+                return i, j
+    return None
 
 
             
@@ -190,20 +235,40 @@ def cassage_inteligent(message_chiffre, message_clair, taille_cle1, taille_cle2)
 for i in range(1):
     # Convertir la chaîne en une liste d'entiers
     plaintext_str = "Hello, world!"
-    key = 0b1010101010
+    key = 0b1010101010 # 682
+    key2 = 0b1110001110 # 910
+    # key = 0b000000001 # 1
+    # key2 = 0b0000000010 # 2
+    key3 = 0b0000000011 # 3
+
 
     # Chiffrer
     ciphertext = encrypt_list(key, plaintext_str)
-    print("Message chiffré:", ciphertext)
+    print("Message chiffré a une clé:", ciphertext)
+
+    ciphertext_double = encrypt_list_double(key, key2, plaintext_str)
+    print("Message chiffré a deux clés:", ciphertext_double)
 
     # Déchiffrer
-    plaintext_result = decrypt_list(key, ciphertext)
+    plaintext_result = binary_list_to_text(decrypt_list(key, ciphertext))
     print("Message déchiffré:", plaintext_result)
+
+    plaintext_result_double = binary_list_to_text(decrypt_list_double(key, key2, ciphertext_double))
+    print("Message déchiffré avec deux clés:", plaintext_result_double)
 
     # Attaque par force brute
     print("Attaque par force brute pour 1 cryptage...")
     print(cassage_brutal_simple(text_to_binary_list(plaintext_str), ciphertext))
-    print("Attaque par force brute pour 2 cryptages...")
-
+    print("Attaque par force brute brutal pour 2 cryptages...")
+    time_start_brutal = time()
+    # print(cassage_brutal(text_to_binary_list(plaintext_str), ciphertext_double))
+    time_end_brutal = time()
+    print("Temps d'exécution de la force brute brutal: ", time_end_brutal - time_start_brutal)
+    print("Attaque par force brute inteligente pour 2 cryptages...")
+    time_start_inteligent = time()
+    keyres, keyres2 =cassage_inteligent(ciphertext_double, text_to_binary_list(plaintext_str))
+    time_end_inteligent = time()
+    print("Message déchiffré par cassage inteligent:", binary_list_to_text(decrypt_list_double(keyres, keyres2, ciphertext_double)))
+    print("Temps d'exécution de la force brute inteligente: ", time_end_inteligent - time_start_inteligent)
 
 exit()
