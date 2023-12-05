@@ -266,7 +266,7 @@ for i in range(1):
     print("Temps d'exécution de la force brute brutal: ", time_end_brutal - time_start_brutal)
     print("Attaque par force brute inteligente pour 2 cryptages...")
     time_start_inteligent = time()
-    keyres, keyres2 =cassage_inteligent(ciphertext_double, text_to_binary_list(plaintext_str))
+    keyres, keyres2 = cassage_inteligent(ciphertext_double, text_to_binary_list(plaintext_str))
     time_end_inteligent = time()
     print("Message déchiffré par cassage inteligent:", binary_list_to_text(decrypt_list_double(keyres, keyres2, ciphertext_double)))
     print("Temps d'exécution de la force brute inteligente: ", time_end_inteligent - time_start_inteligent)
