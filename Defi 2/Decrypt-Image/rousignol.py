@@ -25,16 +25,6 @@ def bmp_to_tuples(image_path):
 
     return liste_tuples
 
-# Chemin de l'image BMP
-chemin_image_bmp = "rossignol1.bmp"
-chemin_image_bmp2 = "rossignol2.bmp"
-
-# Appeler la fonction et obtenir la liste de tuples
-liste_couleurs = bmp_to_tuples(chemin_image_bmp)
-liste_couleurs2 = bmp_to_tuples(chemin_image_bmp2)
-
-from PIL import Image
-
 def extract_key_from_bmp(image_path):
     # Ouvrir l'image BMP avec Pillow
     img = Image.open(image_path)
@@ -57,10 +47,16 @@ def extract_key_from_bmp(image_path):
             if len(key_binary) == 64:
                 return key_binary
 
-# Exemple d'utilisation
+# Chemin de l'image BMP
+chemin_image_bmp = "./Defi 2/Decrypt-Image/rossignol1.bmp"
+chemin_image_bmp2 = "./Defi 2/Decrypt-Image/rossignol2.bmp"
 
-image_modifiee = "rossignol2.bmp"
-key = extract_key_from_bmp(image_modifiee)
+# Appeler la fonction et obtenir la liste de tuples
+liste_couleurs = bmp_to_tuples(chemin_image_bmp)
+liste_couleurs2 = bmp_to_tuples(chemin_image_bmp2)
+
+# Appel de la fonction pour extraire la clé
+key = extract_key_from_bmp(chemin_image_bmp2)
 print("Clé extraite de l'image BMP :", key)
 
 

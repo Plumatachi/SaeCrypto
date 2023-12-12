@@ -171,7 +171,7 @@ def binary_list_to_text(binary_list):
     """Convert a list of binary numbers to a string"""
     return ''.join(chr(char) for char in binary_list)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # Test vectors described in "Simplified DES (SDES)"
     # (http://www2.kinneret.ac.il/mjmay/ise328/328-Assignment1-SDES.pdf)
  
@@ -229,7 +229,7 @@ def cassage_inteligent(message_chiffre, message_clair):
     return None
 
 
-            
+
 
 # Cryptage avec 2 clés
 for i in range(1):
@@ -237,8 +237,6 @@ for i in range(1):
     plaintext_str = "Hello, world!"
     key = 0b1010101010 # 682
     key2 = 0b1110001110 # 910
-    # key = 0b000000001 # 1
-    # key2 = 0b0000000010 # 2
     key3 = 0b0000000011 # 3
 
 
@@ -261,7 +259,7 @@ for i in range(1):
     print(cassage_brutal_simple(text_to_binary_list(plaintext_str), ciphertext))
     print("Attaque par force brute brutal pour 2 cryptages...")
     time_start_brutal = time()
-    # print(cassage_brutal(text_to_binary_list(plaintext_str), ciphertext_double))
+    print(cassage_brutal(text_to_binary_list(plaintext_str), ciphertext_double))
     time_end_brutal = time()
     print("Temps d'exécution de la force brute brutal: ", time_end_brutal - time_start_brutal)
     print("Attaque par force brute inteligente pour 2 cryptages...")
@@ -270,5 +268,3 @@ for i in range(1):
     time_end_inteligent = time()
     print("Message déchiffré par cassage inteligent:", binary_list_to_text(decrypt_list_double(keyres, keyres2, ciphertext_double)))
     print("Temps d'exécution de la force brute inteligente: ", time_end_inteligent - time_start_inteligent)
-
-exit()

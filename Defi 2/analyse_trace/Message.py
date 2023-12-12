@@ -26,7 +26,7 @@ def decode_packet(packet, key64bits):
             return decoded_message
 
 
-packets = rdpcap('analyse_trace/trace_sae.cap')
+packets = rdpcap('./Defi 2/analyse_trace/trace_sae.cap')
 key64bits = '1110011101101101001100010011111110010010101110011001000001001100'
 
 for packetline in packets:
