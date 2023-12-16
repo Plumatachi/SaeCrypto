@@ -33,7 +33,7 @@ A cause de la méthode Meet in the Middle, on ne peut pas affirmer que le double
 
 4. *Quelle(s) information(s) supplémentaire(s) Eve doit-elle récupérer afin de pouvoir espérer venir à bout du double DES plus rapidement qu’avec un algorithme brutal ? Décrivez cette méthode astucieuse et précisez le nombre d’essai pour trouver la clé.*
 
-Si Eve veut espérer venir à bout du double DES, elle aura besoin d'avoir ...
+Si Eve veut espérer venir à bout du double DES, elle aura besoin d'avoir du message chiffrée et du message clair, pour reduire le nombre de possiblité de clées nous utilisont l'égalitée $decrypt(cle2, message_chiffre) = encrypt(cle, message_clair)$, Au lieu d'avoir $2 \times 2^{10}$ nous avons $2^{10} + 2^{10}$
 
 
 ### **Partie 2 : Un peu d'aide**
@@ -44,11 +44,17 @@ Oui parce qu'il faut maintenant générer une clé de 256 bits.
 
 2. *Nous allons tenter d'illustrer expérimentalement les différences entre les deux protocoles. Vous évaluerez :*
     1. *Le temps d'exécution du chiffrement/déchiffrement d'un message avec chacun des deux protocoles. Ici vous devez le mesurer **expérimentalement** et donc fournir le code Python associé.*
-    
+
+    Avec le protocole SDES, l'encryptage et le decryptage dure environ 15.59ms.
+    Avec le protocole AES-256 CBC, l'encryptage et le decryptage dure environ 15.65ms
+    Pour les tests du protocole SDES, nous avons utilisée les fonctions donnée, Et pour les tests du protocoles AES-256 CBC, nous avons utilisée les librairise python cryptography et Pycryptodome.
 
     2. *Le temps de cassage d'AES (même pour un cassage astucieux) si vous deviez l'exécuter sur votre ordinateur. Ici il faut uniquement **estimer** le temps nécessaire.*
 
-    Le temps nécessaire pour casser l'AES serait d'environ ... l'âge de l'univers.
+    En considerant que nous n'avons pas trouvée de cassage astucieux, le plus astucieux c'est le cassage brutal qui va testée $2^{256}$ possiblité de clée.
+    Donc Le temps nécessaire pour casser l'AES serait d'environ $1.81 \times 10^{78} ms$, soit $1.81 \times 10^{75} s$, soit $3.02 \times 10^{73} min$, soit $5.03 \times 10^{71} h$, soit $2.1 \times 10^{70} jours$, soit $5.75 \times 10^{67} ans $, (en considerant 1 an = 365 jours), soit $5.75 \times 10^{64} Milénaire$, 
+    soit $1.25 \times 10^{58}$ fois plus que l'âge de notre systeme solaire (en considerant que l'âge du systeme solaire = $4.6 \times 10^9$)
+    ou $4.16 \times 10^{57}$ fois plus que l'âge de l'univers (en considerant que l'âge de l'univers = $13.8 \times 10^9$).
 
 3. *Il existe d'autres types d'attaques que de tester les différentes possibilités de clés. Lesquelles ? Vous donnerez une explication succincte de l'une d'elles.*
 
@@ -63,19 +69,45 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from scapy.all import *
 
 def decrypt_aes_cbc(key, iv, ciphertext):
+    """Permet de décrypter un message chiffré avec AES en mode CBC
+
+    Args:
+        key (String): la clé de chiffrement
+        iv (String): le vercteur d'initialisation
+        ciphertext (String): le message sans le vecteur d'initialisation
+
+    Returns:
+        String: Le message decrypté
+    """
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     decrypted_message = decryptor.update(ciphertext) + decryptor.finalize()
     return decrypted_message
 
 def remove_iv_and_unpad(payload):
-    # Assuming the IV is already present in the payload
+    """Permet de retirer le vecteur d'initialisation et de retirer le padding du message
+
+    Args:
+        payload (String): le contenu du packet
+
+    Returns:
+        String: un tuble contenant le vecteur d'initialisation et le message sans le padding
+    """
     iv = payload[:16]
     encrypted_message = payload[16:]
     unpadded_message = encrypted_message
     return iv, unpadded_message
 
 def decode_packet(packet, key64bits):
+    """Permet de décoder un packet UDP et de le décrypter avec AES en mode CBC avec la clé key64bits et de le retourner en utf-8 si le port est 9999
+
+    Args:
+        packet (packet): le packet à décoder
+        key64bits (String): la clé de 64 bits à utiliser pour le décryptage
+
+    Returns:
+        String: Le message décrypté en utf-8
+    """
     key = int(key64bits, 2).to_bytes((len(key64bits) + 7) // 8, byteorder='big')
     key = key*4
     if packet.haslayer("UDP") and packet["UDP"].dport == 9999:
@@ -85,8 +117,9 @@ def decode_packet(packet, key64bits):
             decoded_message = decrypted_message.decode("utf-8")
             return decoded_message
 
-
+# on récupère les packets
 packets = rdpcap('./Defi 2/analyse_trace/trace_sae.cap')
+# on récupère la clé de 64 bits qui été dans l'image roussignol2
 key64bits = '1110011101101101001100010011111110010010101110011001000001001100'
 
 for packetline in packets:
